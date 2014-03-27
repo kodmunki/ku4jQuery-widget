@@ -257,6 +257,41 @@ var keyboard_Map = $.hash({
     255: ""
 });
 
+function key(code, alt, ctrl, shift) {
+    if(!$.isNumber(code)) throw $.ku4exception("$.key", $.str.format("Invalid parameter: code {0}", code));
+    this._code = code;
+    this.alt(alt || false)
+        .ctrl(ctrl || false)
+        .shift(shift || false);
+}
+key.prototype = {
+    code: function(code){ return this.property("code", code); },
+    alt: function(alt){ return this.property("alt", alt); },
+    ctrl: function(ctrl){ return this.property("ctrl", ctrl); },
+    shift: function(shift){ return this.property("shift", shift); },
+    equals: function(other) {
+        return this._code == other.code() &&
+               this._alt == other.alt() &&
+               this._ctrl == other.ctrl() &&
+               this._shift == other.shift();
+    },
+    toString: function(){ return $.str.parse(this._code); }
+}
+$.Class.extend(key, $.Class);
+$.key = function(code, alt, ctrl, shift) { return new key(code, alt, ctrl, shift); }
+$.key.canParse = function(e) { return $.isNumber(key_getCode(e)); }
+$.key.parse = function(e) {
+    try { return new key(key_getCode(e), e.altKey, e.ctrlKey, e.shiftKey); }
+    catch(err){
+        throw $.ku4exception("$.key", $.str.format("Cannot parse object: {0}", e));
+    }
+}
+$.key.tryParse = function(o){ return $.key.canParse(o) ? $.key.parse(o) : null; };
+function key_getCode(e) {
+    try { return ($.exists(e.which)) ? e.which : event.keyCode; }
+    catch(e) { return null; }
+}
+
 function keyboard(){
     this._hotKeys = $.hash();
     this._map = $.hash(keyboard_Map);
@@ -3075,9 +3110,9 @@ screenKeyboard.prototype = {
 $.Class.extend(screenKeyboard, $.dom.Class);
 $.onScreenKeyboard = function(){ return new screenKeyboard(); }
 
-function key(code){
+function onScreenKey(code){
     if(!$.isNumber(code))
-        $.exception("arg", $.str.format("Invalid argument code:{0}", code));
+        $.ku4exception("onScreenKey", $.str.format("Invalid argument code:{0}", code));
 
     this._value = $.key(code);
     this._onPress = $.observer();
@@ -3090,7 +3125,7 @@ function key(code){
         .onmouseup(function() { this._onRelease.notify(this._value); }, this)
         .ontouchend(function() { this._onRelease.notify(this._value); }, this)
 }
-key.prototype = {
+onScreenKey.prototype = {
     onPress: function(f, s){
         this._onPress.add(f, s);
         return this;

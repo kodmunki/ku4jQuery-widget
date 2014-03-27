@@ -1,6 +1,6 @@
-function key(code){
+function onScreenKey(code){
     if(!$.isNumber(code))
-        $.exception("arg", $.str.format("Invalid argument code:{0}", code));
+        $.ku4exception("onScreenKey", $.str.format("Invalid argument code:{0}", code));
 
     this._value = $.key(code);
     this._onPress = $.observer();
@@ -13,7 +13,7 @@ function key(code){
         .onmouseup(function() { this._onRelease.notify(this._value); }, this)
         .ontouchend(function() { this._onRelease.notify(this._value); }, this)
 }
-key.prototype = {
+onScreenKey.prototype = {
     onPress: function(f, s){
         this._onPress.add(f, s);
         return this;
