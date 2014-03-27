@@ -44,4 +44,14 @@ $(function(){
         equal(scrollCenter.x(), 720);
         equal(scrollCenter.y(), 380);
     });
+
+    test("contains", function() {
+        ok($.window().contains($.point(0, 0)));
+        ok($.window().contains($.point(100, 100)));
+        ok($.window().contains($.point(1440, 760)));
+    });
+
+    test("redraw", function() {
+        ok($.window().redraw());
+    });
 });

@@ -42,14 +42,16 @@ kuWindow.prototype = {
     scrollCenter: function() {
         return this.center().add(this.scrollOffset());
     },
-    contains: function(coord){
+    contains: function(point){
         var topLeft = this.scrollOffset(),
             bottomRight = this.scrollDims();
-            
-        return !(coord.isAbove(topLeft) ||
-                 coord.isLeftOf(topLeft) ||
-                 coord.isRightOf(bottomRight) ||
-                 coord.isBelow(bottomRight));
+
+        if(!point instanceof $.point.Class)
+            $.ku4exception("$.window", "contains method takes and argument type $.point");
+        return !(point.isAbove(topLeft) ||
+                 point.isLeftOf(topLeft) ||
+                 point.isRightOf(bottomRight) ||
+                 point.isBelow(bottomRight));
     },
     redraw: function(){
         $.ku.redraw(document.body);

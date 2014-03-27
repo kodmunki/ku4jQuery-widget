@@ -2,7 +2,6 @@ function sprite(dom){
     var d = dom || $.create({div:{"class":"ku-sprite"}});
     sprite.base.call(this, d);
     this.to().dragOn().force(.4).mu(.8);
-	this._isTo;
 }
 sprite.prototype = {
     force: function(force){ return this.property("force", force); },

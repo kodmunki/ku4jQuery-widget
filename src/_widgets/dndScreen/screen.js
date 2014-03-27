@@ -64,7 +64,7 @@ dndScreen.prototype = {
     },
     clearDroppers: function() {
         var droppers = this._droppers;
-        droppers.listValues().each(function(dropper){
+        $.list(droppers.values()).each(function(dropper){
             this.removeDropper(dropper);
         }, this);
         return this;
@@ -89,7 +89,7 @@ dndScreen.prototype = {
         this.deactivateHelper();
     },
     _findHitTarget: function(e){
-        var targets = this._targets.listValues(),
+        var targets = $.list(this._targets.values()),
             periph = $.touch().canRead(e) ? $.touch() : $.mouse(),
             hitTarget = null,
             coord;

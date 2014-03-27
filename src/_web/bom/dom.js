@@ -207,7 +207,7 @@ dom.prototype = {
         return this._removeEvent(evt, id);
     },
     clearEvents: function(){
-        this._liveEvents.listValues().each(function(evt) { this._removeEvent(evt); }, this);
+        $.list(this._liveEvents.values()).each(function(evt) { this._removeEvent(evt); }, this);
          return this;
     },
     _addEvent: function(type, act, scp, id) {

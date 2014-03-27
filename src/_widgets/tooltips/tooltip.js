@@ -39,9 +39,9 @@ tooltip.prototype = {
     at: function(dom, pref){
         var w = $.window(),
             d = $.dom(dom),
-            A = $.coord.zero(),
+            A = $.point.zero(),
             B = w.dims(),
-            a = d.offset()
+            a = d.offset(),
             b = a.add(d.outerDims()),
             C = this._tooltip.outerDims(),
             bPlusC = b.add(C),

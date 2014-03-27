@@ -1,8 +1,8 @@
-function keyboard(){
+function screenKeyboard(){
     this._onKeyPressed = $.observer();
     keyboard.base.call(this, $.create({div:{"class":"ku-keyboard"}}));
 }
-keyboard.prototype = {
+screenKeyboard.prototype = {
     addKey: function(code){
         $.onScreenKey(code)
             .addClass($.str.format("ku-keyboard-key ku-key-{0}", code))
@@ -15,5 +15,5 @@ keyboard.prototype = {
 		return this;
     }
 }
-$.Class.extend(keyboard, $.dom.Class);
-$.onScreenKeyboard = function(){ return new keyboard(); }
+$.Class.extend(screenKeyboard, $.dom.Class);
+$.onScreenKeyboard = function(){ return new screenKeyboard(); }
