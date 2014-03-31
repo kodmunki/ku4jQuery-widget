@@ -3090,6 +3090,263 @@ dndScreenTarget.prototype = {
 $.Class.extend(dndScreenTarget, $.dom.Class);
 $.dndScreenTarget = function(dom){ return new dndScreenTarget(dom); }
 
+function abstractCheckbox(dom){
+    abstractCheckbox.base.call(this, dom);
+    this._isinvalid = false;
+    this._keyup = $.uid();
+    this._$dom = $.dom(this.dom());
+    this.onInvalid(this.invalidate, this)
+        .onIsValid(this.validate, this);
+}
+abstractCheckbox.prototype = {
+    $clear: function(){ return this.value("").validate(); },
+    tooltip: function(tooltip){ return this.set("tooltip", tooltip); },
+    invalidate: function(){
+        if(this._isinvalid) return this;
+        this._isinvalid = true;
+        this._$dom
+            .addClass("ku-field-error")
+            .onchange(this.isValid, this, this._keyup);
+        var tt = this._tooltip;
+        if($.exists(tt)) tt.show().rightOf(this.dom());
+        return this;
+    },
+    validate: function(){
+        if(!this._isinvalid) return this;
+        this._isinvalid = false;
+        this._$dom
+            .removeClass("ku-field-error")
+            .removeEvent(this._keyup);
+        var tt = this._tooltip;
+        if($.exists(tt)) tt.hide();
+        return this;
+    }
+}
+$.Class.extend(abstractCheckbox, $.checkbox.Class);
+
+function abstractField(dom){
+    abstractField.base.call(this, dom);
+    this._isinvalid = false;
+    this._keyupid = $.uid();
+    this._$dom = $.dom(this.dom());
+    this.onInvalid(this.invalidate, this)
+        .onIsValid(this.validate, this);
+}
+abstractField.prototype = {
+    $clear: function(){ return this.value("").validate(); },
+    tooltip: function(tooltip){ return this.set("tooltip", tooltip); },
+    watermark: function(watermark){ return this.set("watermark", watermark); },
+    invalidate: function(){
+        if(this._isinvalid) return this;
+        this._isinvalid = true;
+        this._$dom
+            .addClass("ku-field-error")
+            .onkeyup(this.isValid, this, this._keyupid);
+        var tt = this._tooltip;
+        if($.exists(tt)) tt.show().rightOf(this.dom());
+        return this;
+    },
+    validate: function(){
+        if(!this._isinvalid) return this;
+        this._isinvalid = false;
+        this._$dom
+            .removeClass("ku-field-error")
+            .removeEvent(this._keyupid);
+        var tt = this._tooltip;
+        if($.exists(tt)) tt.hide();
+        return this;
+    }
+}
+$.Class.extend(abstractField, $.field.Class);
+
+function abstractSelect(dom){
+    abstractSelect.base.call(this, dom);
+    this._isinvalid = false;
+    this._keyup = $.uid();
+    this._$dom = $.dom(this.dom());
+    this.onInvalid(this.invalidate, this)
+        .onIsValid(this.validate, this);
+}
+abstractSelect.prototype = {
+    $clear: function(){ return this.value("").validate(); },
+    tooltip: function(tooltip){ return this.set("tooltip", tooltip); },
+    invalidate: function(){
+        if(this._isinvalid) return this;
+        this._isinvalid = true;
+        this._$dom
+            .addClass("ku-field-error")
+            .onchange(this.isValid, this, this._keyup);
+        var tt = this._tooltip;
+        if($.exists(tt)) tt.show().rightOf(this.dom());
+        return this;
+    },
+    validate: function(){
+        if(!this._isinvalid) return this;
+        this._isinvalid = false;
+        this._$dom
+            .removeClass("ku-field-error")
+            .removeEvent(this._keyup);
+        var tt = this._tooltip;
+        if($.exists(tt)) tt.hide();
+        return this;
+    }
+}
+$.Class.extend(abstractSelect, $.select.Class);
+
+function checkboxField(dom){
+    checkboxField.base.call(this, dom);
+    this.tooltip($.tooltip().message("Invalid"));
+}
+$.Class.extend(checkboxField, abstractCheckbox);
+$.fields.checkbox = function(dom){ return new checkboxField(dom); }
+
+function dayPointField(dom){
+    dayPointField.base.call(this, dom);
+    this._id = $.uid("field");
+    this._isShow = false;
+    this._calendar = $.calendarControlsDecorator($.calendar())
+                        .onSelect(function(date){
+                            this.value(date.value().toString()).validate();
+                            //this.dom().select();
+                            this.hideCalendar();
+                        }, this)
+                        .showDates();
+    this._calContainer = $.tooltip()
+                        .pointer($.sprite($.create({"div":{"class":"ku-dayPointField-tooltip-pointer"}})).hide().dragOff())
+                        .tooltip($.sprite($.create({"div":{"class":"ku-dayPointField-tooltip"}})).hide().dragOff())
+                        .message(this._calendar.dom());
+
+    this._$dom = $.dom(this.dom())
+        .onfocus(this._focusAction, this)
+        .onkeyup(this._keyupAction, this)
+        .onkeydown(this._keydownAction, this);
+
+        this.spec($.fields.specs.date)
+            .tooltip($.tooltip().message("Enter a valid date."));
+}
+dayPointField.prototype = {
+    $read: function(){ return ($.dayPoint.tryParse(this.dom().value) || "").toString(); },
+    $write: function(value){ this.dom().value = ($.dayPoint.tryParse(value) || value).toString(); },
+    showCalendar: function(){
+        if(this._isShow) return;
+        this._isShow = true;
+        this._calContainer.show().at(this.dom(), ["below", "above"]);
+        $.window().onmouseup(this._hideCalendar, this, this._id);
+		return this;
+    },
+    hideCalendar: function(e){
+        this._calContainer.hide();
+        this._calendar.detach();
+        $.window().remove(this._id);
+        this._isShow = false;
+		return this;
+    },
+    _hideCalendar: function(e) {
+        var cal = this._calendar,
+            ctl = cal.offset(),
+            cbr = ctl.add(cal.outerDims()),
+            inp = this._$dom,
+            itl = inp.offset(),
+            ibr = itl.add(inp.outerDims()),
+            calendar = $.rectangle(ctl, cbr),
+            input = $.rectangle(itl, ibr),
+            mouse = $.mouse().documentCoord(e);
+
+        if(calendar.contains(mouse) ||
+           input.contains(mouse)) return this;
+
+        this.hideCalendar();
+		return this;
+    },
+    _focusAction: function(e) {
+		this.showCalendar(); 
+		return this;
+	},
+    _keyupAction: function(e) { 
+		this.showCalendar(); 
+		return this; 
+	},
+    _keydownAction: function(e) {
+        var key = $.key.parse(e),
+            tab = $.key(9),
+            tabShift = $.key(9, false, false, true);
+        if (key.equals(tab) || key.equals(tabShift))
+        this.hideCalendar(); 
+		return this;
+    }
+}
+$.Class.extend(dayPointField, abstractField);
+$.fields.dayPoint = function(dom){ return new dayPointField(dom); }
+
+function emailField(dom){
+    emailField.base.call(this, dom);
+    this.spec($.fields.specs.email)
+        .tooltip($.tooltip().message("Enter a valid email address."));
+}
+emailField.prototype = {
+    $read: function(){ return this.dom().value; },
+    $write: function(value){ this.dom().value = value; }
+}
+$.Class.extend(emailField, abstractField);
+$.fields.email = function(dom){ return new emailField(dom); }
+
+function field(dom){
+    field.base.call(this, dom);
+    this.tooltip($.tooltip().message("Invalid"));
+}
+$.Class.extend(field, abstractField);
+$.fields.field = function(dom){ return new field(dom); }
+
+function moneyField(dom){
+    moneyField.base.call(this, dom);
+    this.spec($.fields.specs.currency)
+        .tooltip($.tooltip().message("Enter a valid money amount."));
+    $.dom(this.dom()).onblur(function(){ this.$write(this.value()); }, this);
+    $.dom(this.dom()).onfocus(function(){
+        var value = this.value();
+        if(!$.money.canParse(value)) return;
+        this.dom().value = $.money.parse(value).value();
+    }, this);
+}
+moneyField.prototype = {
+    $read: function(){
+        var value = this.dom().value;
+        return ($.money.canParse(value))
+            ? $.money.parse(value).value()
+            : value;
+    },
+    $write: function(value){ this.dom().value = $.money.tryParse(value) || value; }
+}
+$.Class.extend(moneyField, abstractField);
+$.fields.money = function(dom){ return new moneyField(dom); }
+
+function phoneField(dom){
+    phoneField.base.call(this, dom);
+    this.spec($.fields.specs.phone)
+        .tooltip($.tooltip().message("Enter a valid phone number including area code."));
+    $.dom(this.dom()).onblur(function(){ this.value(this.value()); }, this);
+}
+phoneField.prototype = {
+    $read: function(){ return this.dom().value.replace(/[^\d]/g, ""); },
+    $write: function(value){
+        this.dom().value = (function(v, f) {
+                var a = v.replace(/[^\d]/g, "").split(/\B/), i = 0, l = a.length,
+                    rv = (l < 11) ? f.replace(/^#\s/, "") : f;
+                while(i < l) { rv = rv.replace("#", a[i]); i++; }
+                return (/#/.test(rv)) ? value : rv;
+            })(value, "# (###) ###-####");
+    }
+}
+$.Class.extend(phoneField, abstractField);
+$.fields.phone = function(dom, format){ return new phoneField(dom, format); }
+
+function selectField(dom){
+    selectField.base.call(this, dom);
+    this.tooltip($.tooltip().message("Invalid"));
+}
+$.Class.extend(selectField, abstractSelect);
+$.fields.select = function(dom){ return new selectField(dom); }
+
 function screenKeyboard(){
     this._onKeyPressed = $.observer();
     keyboard.base.call(this, $.create({div:{"class":"ku-keyboard"}}));
@@ -3516,8 +3773,8 @@ tooltip.prototype = {
             a = d.offset(),
             b = a.add(d.outerDims()),
             C = this._tooltip.outerDims(),
-            bPlusC = b.add(C),
-            aLessC = a.subtract(C),
+            bPlusC = $.point.parse(b.add(C)),
+            aLessC = $.point.parse(a.subtract(C)),
             rightOf = !bPlusC.isRightOf(B),
             below = !bPlusC.isBelow(B),
             leftOf = !aLessC.isLeftOf(A),
