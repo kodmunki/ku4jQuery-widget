@@ -645,18 +645,20 @@ $.evt = {
 
 $.findOuterDims = function(dom) {
     var d = $.ele(dom);
+    if(!d) return { width: 0, height: 0 };
     return { width: d.offsetWidth, height: d.offsetHeight };
 },
 $.findInnerDims = function(dom) {
     var d = $.ele(dom);
+    if(!d) return { width: 0, height: 0 };
     return { width: d.clientWidth, height: d.clientHeight };
 },
 $.findOffset = function(dom) {
     var d = $.ele(dom), x = 0, y = 0;
-    if(!d) return null;
+    if(!d) return { left: 0, top: 0 };
     do {
-        x += d.offsetLeft;
-        y += d.offsetTop;
+        x += d.offsetLeft || 0;
+        y += d.offsetTop || 0;
     }
     while ((function(){
         try { d = d.offsetParent; }
@@ -667,17 +669,18 @@ $.findOffset = function(dom) {
 }
 $.findBoundedOffset = function(dom){
     var d = $.ele(dom);
-    if(!d) return null;
-    return{ left: d.offsetLeft, top: d.offsetTop }
+    if(!d) return { left: 0, top: 0 };
+    return { left: d.offsetLeft, top: d.offsetTop };
 },
 $.findScrollDims = function(dom) {
     var d = $.ele(dom);
+    if(!d) return { width: 0, height: 0 };
     return { width: d.scrollWidth, height: d.scrollHeight };
 }
 
 $.findScrollOffset = function(dom) {
     var d = $.ele(dom), x = 0, y = 0;
-    if(!d) return null;
+    if(!d) return { left: 0, top: 0 };
     do {
         x += d.scrollLeft || 0;
         y += d.scrollTop || 0;
